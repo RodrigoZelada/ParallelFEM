@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<VTKFile type="PUnstructuredGrid" version="0.1" byte_order="LittleEndian">
+  <PUnstructuredGrid GhostLevel="0">
+    <PPointData>
+    </PPointData>
+    <PCellData>
+      <PDataArray type="Int32" Name="Label"/>
+      <PDataArray type="Float64" NumberOfComponents="1" Name="scalar1"/>
+    </PCellData>
+    <PPoints>
+      <PDataArray type="Float32" NumberOfComponents="3" Name="Points"/>
+    </PPoints>
+    <Piece Source="T_2_0000_0.vtu"/>
+    <Piece Source="T_2_0000_1.vtu"/>
+  </PUnstructuredGrid>
+</VTKFile>

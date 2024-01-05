@@ -1,0 +1,20 @@
+//border a(t=0, 2*pi){x=cos(t); y=sin(t); label=1;}
+//mesh Th=buildmesh(a(150));//50
+
+//savemesh(Th, "meshes/Circle.mesh");
+
+load "medit"
+load "iovtk"
+
+mesh Th = readmesh("meshes/Th.mesh");
+
+fespace Ph(Th, P1);
+Ph T, S, F;
+
+F = 1.;
+solve Laplace(T, S)
+            = int2d(Th)(dx(T)*dx(S)+ dy(T)*dy(S))
+             -int2d(Th)(F*S)
+             +on(1,2,3,4,T=0.);
+
+savesol("output/TF.sol",Th,T);

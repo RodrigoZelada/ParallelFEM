@@ -1,0 +1,49 @@
+//ff-mpirun -np 8 meshGenerationMetis.edp
+
+load "PETSc"
+macro dimension()2 //EOM
+include "macro_ddm.idp"
+load "medit"
+
+mesh Th = square(50,50); //500,500
+mesh ThGlobal = Th;
+savemesh(Th,"meshes/Th.mesh");
+
+int[int] n2o;
+macro ThN2O() n2o // this tells buildDmesh to keep the local to global correspondence
+
+buildDmesh(Th)
+
+savemesh(Th,"meshes/Th"+mpirank+".mesh");
+
+fespace Ph(Th, P1);
+Ph T, loc;
+T[] = readsol("output/T"+mpirank+".sol");
+loc = T;
+
+fespace PhGlobal(ThGlobal,P1);
+PhGlobal sum, glob;
+
+varf vPoisson(u,v) = int2d(Th)(dx(u)*dx(v) + dy(u)*dy(v))
+                    +on(1,2,3,4,u=0.);
+varf vRHS(u,v) = int2d(Th)(v)
+                    +on(1,2,3,4,u=0.);
+
+Mat A;
+createMat(Th, A, P1);
+A = vPoisson(Ph, Ph, tgv=-1);
+real[int] b = vRHS(0, Ph, tgv=-1);
+int[int] subIdx = restrict(Ph, PhGlobal, n2o);
+// real[int] locPETSc;
+// ChangeNumbering(A, loc[], locPETSc);
+// ChangeNumbering(A, loc[], locPETSc, inverse=true);
+loc[] .*= A.D;
+glob[](subIdx) = loc[];
+mpiAllReduce(glob[],sum[],mpiCommWorld, mpiSUM);
+
+savevtk("output/T.vtu", Th, T);
+
+if (mpirank==0){
+  savesol("output/Tglobal.sol",ThGlobal, sum, order=1);
+  savevtk("output/sum.vtu", ThGlobal, sum);
+}
